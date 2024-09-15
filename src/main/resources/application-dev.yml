@@ -1,0 +1,77 @@
+server:
+  port: 8080
+
+spring:
+  config:
+    activate:
+      on-profile: dev
+
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: ${url}
+    username: ${username}
+    password: ${password}
+
+  data:
+    redis:
+      host: ${redis_host}
+      port: ${redis_port}
+
+  #    elasticsearch:
+  #      username: ${elasticsearch_username}
+  #      password: ${elasticsearch_password}
+  #      host: ${elasticsearch_host}
+  #      port: ${elasticsearch_port}
+  #      fingerprint: ${elasticsearch_fingerprint}
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: true
+    properties:
+      dialect: org.hibernate.dialect.MySQLDialect
+      hibernate:
+        format_sql: true
+
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${mail_username}
+    password: ${mail_password}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+          from: ${mail_username}
+        debug: false
+
+  kakao:
+    rest:
+      api:
+        key: ${KAKAO_REST_API_KEY}
+
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            redirect-uri: ${google_redirect_url}
+            authorization-grant-type: authorization_code
+            client-id: ${client_id}
+            client-secret: ${client_secret}
+            client-name: google
+            scope:
+              - email
+              - profile
+
+#logging:
+#  level:
+#    root: INFO
+
+jwt:
+  secret-key: ${jwt_secret_key}
+  issuer: ${jwt_issuer}
+  access-token-expired-time: ${jwt_access_token_expired_time}
+  refresh-token-expired-time: ${jwt_refresh_token_expired_time}

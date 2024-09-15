@@ -1,0 +1,55 @@
+name: CI (feat. Java CI with Gradle)
+
+on:
+  pull_request:
+    branches:
+      - release # 배포
+      - main # 개발
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17 [temurin(Oracle)]
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Start Redis
+        uses: supercharge/redis-github-action@1.7.0
+        with:
+          redis-version: 7
+
+      - name: 테스트를 실행을 위한 application.yml(test) 환경변수 설정
+        uses: microsoft/variable-substitution@v1
+        with:
+          files: ./src/test/resources/application.yml
+        env:
+          spring.mail.username: ${{secrets.MAIL_USERNAME}}
+          spring.mail.password: ${{secrets.MAIL_PASSWORD}}
+          spring.data.redis.host: ${{secrets.REDIS_HOST}}
+          spring.data.redis.port: ${{secrets.REDIS_PORT}}
+          spring.security.oauth2.client.registration.google.redirect-uri: ${{secrets.GOOGLE_REDIRECT_URI}}
+          spring.security.oauth2.client.registration.google.client-id: ${{secrets.GOOGLE_CLIENT_ID}}
+          spring.security.oauth2.client.registration.google.client-secret: ${{secrets.GOOGLE_CLIENT_SECRET}}
+          #          spring.data.elasticsearch.username: ${{secrets.ELASTICSEARCH_USERNAME}}
+          #          spring.data.elasticsearch.password: ${{secrets.ELASTICSEARCH_PASSWORD}}
+          #          spring.data.elasticsearch.host: ${{secrets.ELASTICSEARCH_HOST}}
+          #          spring.data.elasticsearch.port: ${{secrets.ELASTICSEARCH_PORT}}
+          #          spring.data.elasticsearch.fingerprint: ${{secrets.ELASTICSEARCH_FINGERPRINT}}
+          jwt.secret-key: ${{secrets.JWT_SECRET_KEY}}
+          jwt.issuer: ${{secrets.JWT_ISSUER}}
+          jwt.access-token-expired-time: ${{secrets.JWT_ACCESS_TOKEN_EXPIRED_TIME}}
+          jwt.refresh-token-expired-time: ${{secrets.JWT_REFRESH_TOKEN_EXPIRED_TIME}}
+          kakao.rest.api.key: ${{secrets.KAKAO_REST_API_KEY}}
+
+      - name: Grant execute permission for Gradlew
+        run: chmod +x ./gradlew
+
+      - name: Run Tests with Gradle [--parallel]
+        run: ./gradlew --info --parallel test

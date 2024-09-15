@@ -1,0 +1,68 @@
+# 해당 application-prod 는 배포를 위한 yml 파일입니다. 절대 Never 수정하시면 안됩니다.
+spring:
+  datasource:
+    url: ${url}
+    username: ${username}
+    password: ${password}
+
+  mail:
+    username: ${mail_username}
+    password: ${mail_password}
+
+  data:
+    redis:
+      host: ${redis_host}
+      port: ${redis_port}
+
+  #    elasticsearch:
+  #      username: ${elasticsearch_username}
+  #      password: ${elasticsearch_password}
+  #      host: ${elasticsearch_host}
+  #      port: ${elasticsearch_port}
+  #      fingerprint: ${elasticsearch_fingerprint}
+
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            redirect-uri: ${google_redirect_url}
+            authorization-grant-type: authorization_code
+            client-id: ${client_id}
+            client-secret: ${client_secret}
+            client-name: google
+            scope:
+              - email
+              - profile
+
+jwt:
+  secret-key: ${jwt_secret_key}
+  issuer: ${jwt_issuer}
+  access-token-expired-time: ${jwt_access_token_expired_time}
+  refresh-token-expired-time: ${jwt_refresh_token_expired_time}
+
+kakao:
+  rest:
+    api:
+      key: ${KAKAO_REST_API_KEY}
+
+#  스웨거 때문에 존재
+servers:
+  url: ${servers-url}
+
+logging:
+  level:
+    root: INFO
+
+## s3 이미지 저장
+#cloud:
+#  aws:
+#    s3:
+#      bucket: ${s3-bucket}
+#
+#    credentials:
+#      access-key: ${s3-access-key}
+#      secret-key: ${s3-secret-key}
+#
+#    region:
+#      static: ${s3-region-static}
