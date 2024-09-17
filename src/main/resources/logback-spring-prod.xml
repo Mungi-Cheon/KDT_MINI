@@ -3,7 +3,6 @@
   <appender name="INFO_APPENDER" class="ch.qos.logback.core.rolling.RollingFileAppender">
     <file>logs/info.log</file>
     <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
-      <fileNamePattern>./logs/archive/info.%d{yyyy-MM-dd}_%i.log</fileNamePattern>
       <maxFileSize>10MB</maxFileSize>
       <maxHistory>30</maxHistory>
     </rollingPolicy>
@@ -15,7 +14,6 @@
   <appender name="WARN_APPENDER" class="ch.qos.logback.core.rolling.RollingFileAppender">
     <file>logs/warn.log</file>
     <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
-      <fileNamePattern>./logs/archive/warn.%d{yyyy-MM-dd}_%i.log</fileNamePattern>
       <maxFileSize>10MB</maxFileSize>
       <maxHistory>30</maxHistory>
     </rollingPolicy>
@@ -27,7 +25,6 @@
   <appender name="ERROR_APPENDER" class="ch.qos.logback.core.rolling.RollingFileAppender">
     <file>logs/error.log</file>
     <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
-      <fileNamePattern>./logs/archive/error.%d{yyyy-MM-dd}_%i.log</fileNamePattern>
       <maxFileSize>10MB</maxFileSize>
       <maxHistory>30</maxHistory>
     </rollingPolicy>

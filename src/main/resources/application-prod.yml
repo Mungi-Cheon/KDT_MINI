@@ -14,13 +14,6 @@ spring:
       host: ${redis_host}
       port: ${redis_port}
 
-  #    elasticsearch:
-  #      username: ${elasticsearch_username}
-  #      password: ${elasticsearch_password}
-  #      host: ${elasticsearch_host}
-  #      port: ${elasticsearch_port}
-  #      fingerprint: ${elasticsearch_fingerprint}
-
   security:
     oauth2:
       client:
@@ -53,16 +46,3 @@ servers:
 logging:
   level:
     root: INFO
-
-## s3 이미지 저장
-#cloud:
-#  aws:
-#    s3:
-#      bucket: ${s3-bucket}
-#
-#    credentials:
-#      access-key: ${s3-access-key}
-#      secret-key: ${s3-secret-key}
-#
-#    region:
-#      static: ${s3-region-static}

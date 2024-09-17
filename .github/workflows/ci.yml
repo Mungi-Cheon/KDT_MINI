@@ -37,11 +37,6 @@ jobs:
           spring.security.oauth2.client.registration.google.redirect-uri: ${{secrets.GOOGLE_REDIRECT_URI}}
           spring.security.oauth2.client.registration.google.client-id: ${{secrets.GOOGLE_CLIENT_ID}}
           spring.security.oauth2.client.registration.google.client-secret: ${{secrets.GOOGLE_CLIENT_SECRET}}
-          #          spring.data.elasticsearch.username: ${{secrets.ELASTICSEARCH_USERNAME}}
-          #          spring.data.elasticsearch.password: ${{secrets.ELASTICSEARCH_PASSWORD}}
-          #          spring.data.elasticsearch.host: ${{secrets.ELASTICSEARCH_HOST}}
-          #          spring.data.elasticsearch.port: ${{secrets.ELASTICSEARCH_PORT}}
-          #          spring.data.elasticsearch.fingerprint: ${{secrets.ELASTICSEARCH_FINGERPRINT}}
           jwt.secret-key: ${{secrets.JWT_SECRET_KEY}}
           jwt.issuer: ${{secrets.JWT_ISSUER}}
           jwt.access-token-expired-time: ${{secrets.JWT_ACCESS_TOKEN_EXPIRED_TIME}}

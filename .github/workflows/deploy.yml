@@ -1,4 +1,4 @@
-name: CD (자동 배포)
+name: CD
 
 on:
   push:
@@ -13,106 +13,103 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'corretto'
 
-      # 배포하기 위한 application-prod.yml 환경변수 설정
-      - name: Set application-prod.yml
-        uses: microsoft/variable-substitution@v1
-        with:
-          files: ./src/main/resources/application-prod.yml
-        env:
-          spring.datasource.url: ${{secrets.DB_URL2}}
-          spring.datasource.username: ${{secrets.DB_USERNAME2}}
-          spring.datasource.password: ${{secrets.DB_PASSWORD2}}
-          spring.mail.username: ${{secrets.MAIL_USERNAME}}
-          spring.mail.password: ${{secrets.MAIL_PASSWORD}}
-          spring.data.redis.host: ${{secrets.REDIS_HOST}}
-          spring.data.redis.port: ${{secrets.REDIS_PORT}}
-          spring.security.oauth2.client.registration.google.redirect-uri: ${{secrets.GOOGLE_REDIRECT_URI}}
-          spring.security.oauth2.client.registration.google.client-id: ${{secrets.GOOGLE_CLIENT_ID}}
-          spring.security.oauth2.client.registration.google.client-secret: ${{secrets.GOOGLE_CLIENT_SECRET}}
-          #          spring.data.elasticsearch.username: ${{secrets.ELASTICSEARCH_USERNAME}}
-          #          spring.data.elasticsearch.password: ${{secrets.ELASTICSEARCH_PASSWORD}}
-          #          spring.data.elasticsearch.host: ${{secrets.ELASTICSEARCH_HOST}}
-          #          spring.data.elasticsearch.port: ${{secrets.ELASTICSEARCH_PORT}}
-          #          spring.data.elasticsearch.fingerprint: ${{secrets.ELASTICSEARCH_FINGERPRINT}}
-          jwt.secret-key: ${{secrets.JWT_SECRET_KEY}}
-          jwt.issuer: ${{secrets.JWT_ISSUER}}
-          jwt.access-token-expired-time: ${{secrets.JWT_ACCESS_TOKEN_EXPIRED_TIME}}
-          jwt.refresh-token-expired-time: ${{secrets.JWT_REFRESH_TOKEN_EXPIRED_TIME}}
-          kakao.rest.api.key: ${{secrets.KAKAO_REST_API_KEY}}
-
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@417ae3ccd767c252f5661f1ace9f835f9654f2b5 # v3.1.0
-
-      # Permission denied 해결을 위해 쓰기 권한 부여
       - name: Grant execute permission for Gradlew
         run: chmod +x ./gradlew
 
-      # 테스트없이 빌드만!!
       - name: Build with Gradle Wrapper
         run: ./gradlew build -x test
 
-      # Docker 이미지 build
       - name: docker image build
-        run: docker build -t ${{ secrets.DOCKER_HUB_USERNAME2 }}/${{ secrets.DOCKER_IMAGE_NAME2 }} .
+        run: docker build -t ${{ secrets.DOCKER_HUB_USERNAME }}/${{ secrets.DOCKER_IMAGE_NAME }}
 
       # DockerHub 로그인
       - name: docker login
         uses: docker/login-action@v3.0.0
         with:
-          username: ${{ secrets.DOCKER_HUB_USERNAME2}}
-          password: ${{ secrets.DOCKER_HUB_TOKEN2}}
+          username: ${{ secrets.DOCKER_HUB_USERNAME}}
+          password: ${{ secrets.DOCKER_HUB_TOKEN}}
 
       # DockerHub push
       - name: docker Hub push
-        run: docker push ${{ secrets.DOCKER_HUB_USERNAME2 }}/${{ secrets.DOCKER_IMAGE_NAME2 }}
+        run: docker push ${{ secrets.DOCKER_HUB_USERNAME }}/${{ secrets.DOCKER_IMAGE_NAME }}
 
-      # GET GitHub IP
-      - name: GET GitHub IP
-        id: ip
-        uses: haythem/public-ip@v1.2
+  deploy:
 
-        # Configure AWS Credentials - AWS 접근 권한 취득(IAM)
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
+    runs-on: ubuntu-latest
+    needs: build
 
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID2 }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY2 }}
-          aws-region: ${{ secrets.AWS_REGION2 }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-        # Add github ip to AWS
-      - name: Add GitHub IP to AWS
-        run: |
-          aws ec2 authorize-security-group-ingress --group-id ${{ secrets.AWS_SG_ID2 }} --protocol tcp --port 22 --cidr ${{ steps.ip.outputs.ipv4 }}/32
+      - name: Grant execute permission for Gradlew
+        run: chmod +x ./gradlew
 
-        # AWS EC2 Server Connect & Docker 명령어 실행 (8)
-      - name: AWS EC2 Connection
+      - name: Delete .env, docker-compose, git_private_key
         uses: appleboy/ssh-action@v0.1.6
         with:
-          host: ${{ secrets.EC2_HOST2 }}
-          username: ${{ secrets.EC2_USERNAME2 }}
-          key: ${{ secrets.EC2_KEY2 }}
-          port: ${{ secrets.EC2_SSH_PORT2 }}
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_KEY }}
+          port: ${{ secrets.EC2_SSH_PORT }}
           timeout: 60s
-          script: | #Docker Image명 기입, port 기입
-            whoami
-            sudo docker stop ${{ secrets.DOCKER_IMAGE_NAME2 }}
-            whoami
-            sudo docker rm ${{ secrets.DOCKER_IMAGE_NAME2 }}
-            whoami
-            sudo docker rmi ${{ secrets.DOCKER_HUB_USERNAME2 }}/${{ secrets.DOCKER_IMAGE_NAME2 }}     
-            
-            sudo docker pull ${{ secrets.DOCKER_HUB_USERNAME2 }}/${{ secrets.DOCKER_IMAGE_NAME2 }}
-            whoami
-            sudo docker run -it -d -p 8080:8080 --name ${{ secrets.DOCKER_IMAGE_NAME2 }} ${{ secrets.DOCKER_HUB_USERNAME2 }}/${{ secrets.DOCKER_IMAGE_NAME2 }}
-        
-        # REMOVE Github IP FROM security group (9)
-      - name: Remove IP FROM security group
-        run: |
-          aws ec2 revoke-security-group-ingress --group-id ${{ secrets.AWS_SG_ID2 }} --protocol tcp --port 22 --cidr ${{ steps.ip.outputs.ipv4 }}/32
+          script: |
+            cd /home/app/
+            rm -f .env
+            rm -f docker-compose.yml
+
+      - name: set environment variables
+        uses: appleboy/ssh-action@v0.1.6
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_KEY }}
+          port: ${{ secrets.EC2_SSH_PORT }}
+          timeout: 60s
+          script: |
+            echo "DB_URL=${{secrets.DB_URL}}" >> /home/app/.env
+            echo "DB_USERNAME=${{secrets.DB_USERNAME}}" >> /home/app/.env
+            echo "DB_PASSWORD=${{secrets.DB_PASSWORD}}" >> /home/app/.env
+            echo "MAIL_USERNAME=${{secrets.MAIL_USERNAME}}" >> /home/app/.env
+            echo "MAIL_PASSWORD=${{secrets.MAIL_PASSWORD}}" >> /home/app/.env
+            echo "REDIS_HOST=${{secrets.REDIS_HOST}}" >> /home/app/.env
+            echo "REDIS_PORT=${{secrets.REDIS_PORT}}" >> /home/app/.env
+            echo "GOOGLE_REDIRECT_URI=${{secrets.GOOGLE_REDIRECT_URI}}" >> /home/app/.env
+            echo "GOOGLE_CLIENT_ID=${{secrets.GOOGLE_CLIENT_ID}}" >> /home/app/.env
+            echo "GOOGLE_CLIENT_SECRET=${{secrets.GOOGLE_CLIENT_SECRET}}" >> /home/app/.env
+            echo "JWT_SECRET_KEY=${{secrets.JWT_SECRET_KEY}}" >> /home/app/.env
+            echo "JWT_ISSUER=${{secrets.JWT_ISSUER}}" >> /home/app/.env
+            echo "JWT_ACCESS_TOKEN_EXPIRED_TIME=${{secrets.JWT_ACCESS_TOKEN_EXPIRED_TIME}}" >> /home/app/.env
+            echo "JWT_REFRESH_TOKEN_EXPIRED_TIME=${{secrets.JWT_REFRESH_TOKEN_EXPIRED_TIME}}" >> /home/app/.env
+            echo "KAKAO_REST_API_KEY=${{secrets.KAKAO_REST_API_KEY}}" >> /home/app/.env
+
+      - name: Copy docker-compose.yml to EC2
+        uses: appleboy/scp-action@v0.1.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_KEY }}
+          port: ${{ secrets.EC2_SSH_PORT }}
+          source: "./docker-compose.yml"
+          target: "/home"
+
+      - name: Deploy application with Docker Compose
+        uses: appleboy/ssh-action@v0.1.6
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_KEY }}
+          port: ${{ secrets.EC2_SSH_PORT }}
+          timeout: 60s
+          script: |
+            cd /home/app/
+            docker-compose down
+            docker-compose pull
+            docker-compose up -d

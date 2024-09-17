@@ -1,0 +1,14 @@
+services:
+  app:
+    image: mgcheon/travelapp:latest
+    container_name: travelapp
+    env_file:
+      - /home/app/.env  # .env 파일에서 환경 변수를 로드
+    ports:
+      - 8080:8080
+    networks:
+      - service-network
+
+networks:
+  service-network:
+    driver: bridge
