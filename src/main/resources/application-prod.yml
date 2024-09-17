@@ -39,10 +39,6 @@ kakao:
     api:
       key: ${KAKAO_REST_API_KEY}
 
-#  스웨거 때문에 존재
-servers:
-  url: ${servers-url}
-
 logging:
   level:
     root: INFO
