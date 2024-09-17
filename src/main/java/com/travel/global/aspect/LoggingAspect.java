@@ -2,6 +2,7 @@ package com.travel.global.aspect;
 
 import java.lang.reflect.Method;
 import java.util.List;
+import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.AfterReturning;
@@ -11,22 +12,16 @@ import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
 import org.aspectj.lang.annotation.Pointcut;
 import org.aspectj.lang.reflect.MethodSignature;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpStatusCodeException;
 
 @Aspect
+@Slf4j
 @Component
 public class LoggingAspect {
 
-    private final Logger infoLogger = LoggerFactory.getLogger("infoLogger");
-    private final Logger warnLogger = LoggerFactory.getLogger("warnLogger");
-    private final Logger errorLogger = LoggerFactory.getLogger("errorLogger");
-
-    // com.travel.domain 이하 패키지의 모든 클래스 이하 모든 메서드에 적용
     @Pointcut("execution(* com.travel.domain..*.*(..))")
     private void cut() {
     }
@@ -37,20 +32,20 @@ public class LoggingAspect {
     public void beforeParameterLog(JoinPoint joinPoint) {
         // 메서드 정보 받아오기
         Method method = getMethod(joinPoint);
-        infoLogger.info("======= Entering method: {} =======", method.getName());
+        log.info("======= Entering method: {} =======", method.getName());
 
         // 파라미터 받아오기
         Object[] args = joinPoint.getArgs();
         if (args.length == 0) {
-            infoLogger.info("No parameters.");
+            log.info("No parameters.");
         } else {
             for (Object arg : args) {
                 if (arg == null) {
-                    infoLogger.info("Parameter type: null");
-                    infoLogger.info("Parameter value: null");
+                    log.info("Parameter type: null");
+                    log.info("Parameter value: null");
                 } else {
-                    infoLogger.info("Parameter type: {}", arg.getClass().getSimpleName());
-                    infoLogger.info("Parameter value: {}", arg);
+                    log.info("Parameter type: {}", arg.getClass().getSimpleName());
+                    log.info("Parameter value: {}", arg);
                 }
             }
         }
@@ -61,21 +56,17 @@ public class LoggingAspect {
     public void afterReturnLog(JoinPoint joinPoint, Object returnObj) {
         // 메서드 정보 받아오기
         Method method = getMethod(joinPoint);
-        infoLogger.info("======= Exiting method: {} =======", method.getName());
+        log.info("======= Exiting method: {} =======", method.getName());
 
         if (returnObj != null) {
-            if (returnObj instanceof List) {
-                List<?> returnList = (List<?>) returnObj;
-                infoLogger.info("Return type: List, size: {}", returnList.size());
-//                for (int i = 0; i < returnList.size(); i++) {
-//                    infoLogger.info("Element {}: {}", i, returnList.get(i).toString());
-//                }
+            if (returnObj instanceof List<?> returnList) {
+                log.info("Return type: List, size: {}", returnList.size());
             } else {
-                infoLogger.info("Return type: {}", returnObj.getClass().getSimpleName());
-                infoLogger.info("Return value: {}", returnObj);
+                log.info("Return type: {}", returnObj.getClass().getSimpleName());
+                log.info("Return value: {}", returnObj);
             }
         } else {
-            warnLogger.warn("Return value is null");
+            log.warn("Return value is null");
         }
     }
 
@@ -87,13 +78,13 @@ public class LoggingAspect {
 
         HttpStatusCode status = getStatusCode(exception);
         if (status.is4xxClientError()) {
-            warnLogger.warn("======= Exception in method: {} =======", method.getName());
-            warnLogger.warn("Exception type: {}", exception.getClass().getSimpleName());
-            warnLogger.warn("Exception message: {}", exception.getMessage());
+            log.warn("======= Exception in method: {} =======", method.getName());
+            log.warn("Exception type: {}", exception.getClass().getSimpleName());
+            log.warn("Exception message: {}", exception.getMessage());
         } else {
-            errorLogger.error("======= Exception in method: {} =======", method.getName());
-            errorLogger.error("Exception type: {}", exception.getClass().getSimpleName());
-            errorLogger.error("Exception message: {}", exception.getMessage());
+            log.error("======= Exception in method: {} =======", method.getName());
+            log.error("Exception type: {}", exception.getClass().getSimpleName());
+            log.error("Exception message: {}", exception.getMessage());
         }
     }
 
@@ -129,7 +120,7 @@ public class LoggingAspect {
 
     private void logExecutionTime(ProceedingJoinPoint joinPoint, long start) {
         long elapsedTime = System.currentTimeMillis() - start;
-        infoLogger.info("Execution time of method {}: {} ms", getMethod(joinPoint).getName(),
+        log.info("Execution time of method {}: {} ms", getMethod(joinPoint).getName(),
             elapsedTime);
     }
 }
