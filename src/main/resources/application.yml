@@ -1,99 +1,44 @@
-server:
-  port: 8080
-
+# 해당 application-prod 는 배포를 위한 yml 파일입니다. 절대 Never 수정하시면 안됩니다.
 spring:
   datasource:
-    driver-class-name: com.mysql.cj.jdbc.Driver
-    url: ${url}
-    username: ${username}
-    password: ${password}
-  jpa:
-    properties:
-      dialect: org.hibernate.dialect.MySQLDialect
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
 
   mail:
-    host: smtp.gmail.com
-    port: 587
-    username: ${mail_username}
-    password: ${mail_password}
-    properties:
-      mail:
-        smtp:
-          auth: true
-          starttls:
-            enable: true
-        debug: true
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
 
   data:
-    #    elasticsearch:
-    #      username: ${elasticsearch_username}
-    #      password: ${elasticsearch_password}
-    #      host: localhost
-    #      port: 9200
-    #      fingerprint: ${elasticsearch_fingerprint}
-
     redis:
-      host: localhost
-      port: 6379
-
-  elasticsearch:
-    username: ${elasticsearch_username}
-    password: ${elasticsearch_password}
-    host: ${elasticsearch_host}
-    port: ${elasticsearch_port}
-    fingerprint: ${elasticsearch_fingerprint}
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}
 
   security:
     oauth2:
       client:
         registration:
           google:
-            redirect-uri: ${google_redirect_url}
+            redirect-uri: ${GOOGLE_REDIRECT_URI}
             authorization-grant-type: authorization_code
-            client-id: ${client_id}
-            client-secret: ${client_secret}
+            client-id: ${GOOGLE_CLIENT_ID}
+            client-secret: ${GOOGLE_CLIENT_SECRET}
             client-name: google
             scope:
               - email
               - profile
+
+jwt:
+  secret-key: ${JWT_SECRET_KEY}
+  issuer: ${JWT_ISSUER}
+  access-token-expired-time: ${JWT_ACCESS_TOKEN_EXPIRED_TIME}
+  refresh-token-expired-time: ${JWT_REFRESH_TOKEN_EXPIRED_TIME}
 
 kakao:
   rest:
     api:
       key: ${KAKAO_REST_API_KEY}
 
-jwt:
-  secret-key: ${jwt_secret_key}
-  issuer: ${jwt_issuer}
-  access-token-expired-time: ${jwt_access_token_expired_time}
-  refresh-token-expired-time: ${jwt_refresh_token_expired_time}
-
----
-spring:
-  config:
-    activate:
-      on-profile: dev
-  jpa:
-    hibernate:
-      ddl-auto: update
-    show-sql: true
-    properties:
-      hibernate:
-        format_sql: true
-logging:
-  level:
-    root: INFO
-
-servers:
-  url: "http://localhost"
----
-spring:
-  config:
-    activate:
-      on-profile: prod
-  jpa:
-    hibernate:
-      ddl-auto: update
 logging:
   level:
     root: INFO
