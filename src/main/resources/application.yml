@@ -1,6 +1,7 @@
 # 해당 application-prod 는 배포를 위한 yml 파일입니다. 절대 Never 수정하시면 안됩니다.
 spring:
   datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
     url: ${DB_URL}
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
