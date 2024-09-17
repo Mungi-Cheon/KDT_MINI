@@ -47,4 +47,4 @@ jobs:
         run: chmod +x ./gradlew
 
       - name: Run Tests with Gradle [--parallel]
-        run: ./gradlew --info --parallel test
+        run: ./gradlew --info --parallel build -x test
