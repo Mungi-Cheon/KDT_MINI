@@ -6,6 +6,15 @@ spring:
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
 
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      dialect: org.hibernate.dialect.MySQLDialect
+      hibernate:
+        format_sql: true
+
   mail:
     username: ${MAIL_USERNAME}
     password: ${MAIL_PASSWORD}
