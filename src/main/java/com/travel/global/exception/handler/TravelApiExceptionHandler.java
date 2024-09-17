@@ -4,8 +4,6 @@ import com.travel.global.exception.MemberException;
 import java.util.Map;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
@@ -19,8 +17,6 @@ import org.springframework.web.client.HttpStatusCodeException;
 @Order(value = 1)
 public class TravelApiExceptionHandler {
 
-    private final Logger warnLogger = LoggerFactory.getLogger("warnLogger");
-
     @ExceptionHandler(value = {HttpStatusCodeException.class})
     public ResponseEntity<?> travelExceptionAdvice(HttpStatusCodeException e) {
         writeErrorLog(e.getMessage());
@@ -33,9 +29,9 @@ public class TravelApiExceptionHandler {
             .collect(Collectors.toMap(FieldError::getField, FieldError::getDefaultMessage));
 
         e.getBindingResult().getFieldErrors().forEach(fieldError -> {
-            warnLogger.error("======= Validation Exception =======");
-            warnLogger.error("Exception type: {}", e.getClass().getSimpleName());
-            warnLogger.error("Exception message: {}", fieldError.getDefaultMessage());
+            log.error("======= Validation Exception =======");
+            log.error("Exception type: {}", e.getClass().getSimpleName());
+            log.error("Exception message: {}", fieldError.getDefaultMessage());
         });
 
         String errorMessage = String.join(", ", errors.values());
